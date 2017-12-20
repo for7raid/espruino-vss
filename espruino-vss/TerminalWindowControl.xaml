@@ -16,25 +16,30 @@
         </Grid.RowDefinitions>
         <ToolBarPanel>
             <ToolBar>
-                <TextBlock Margin="2">
+                <TextBlock Margin="2" VerticalAlignment="Center">
                     Port
                 </TextBlock>
-                <ComboBox Margin="2" MinWidth="70" MouseDown="ports_MouseDown"  Name="cmbPorts"/>
-                <TextBlock Margin="2">
+                <ComboBox Margin="2" MinWidth="70"  Name="cmbPorts" PreviewMouseDown="ports_MouseDown"/>
+                <TextBlock Margin="2" VerticalAlignment="Center">
                     Baud rate
                 </TextBlock>
-                <ComboBox Margin="2" SelectedValue="926100" IsEditable="True" Width="70" Name="cmbBaudRate">
+                <ComboBox Margin="2" SelectedValue="115200" IsEditable="True" Width="70" Name="cmbBaudRate">
+                    <system:String>74880</system:String>
                     <system:String>9600</system:String>
-                    <system:String>115000</system:String>
-                    <system:String>926100</system:String>
+                    <system:String>115200</system:String>
+                    <system:String>921600</system:String>
                 </ComboBox>
                 <Button Click="Reconnect_Clicked" Margin="2">Reconnect</Button>
+                <Button Click="Disconnect_Clicked" Margin="2">Disconect</Button>
                 <Separator/>
                 <Button Margin="2" Click="sendToBoard_Clicked">Send to board</Button>
+                <Button Margin="2" Click="sendToBoardReset_Clicked">Send to board w/r</Button>
+                <Separator/>
+                <Button Margin="2" Click="sendReset_Clicked">Send reset</Button>
             </ToolBar>
         </ToolBarPanel>
 
-        <TextBox Grid.Row="1" Name="txtTerminal" AcceptsReturn="True" KeyDown="txtTerminal_KeyDown" IsReadOnly="True">
+        <TextBox Grid.Row="1" Name="txtTerminal" AcceptsReturn="True" KeyDown="txtTerminal_KeyDown" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             
         </TextBox>
     </Grid>

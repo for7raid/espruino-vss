@@ -18,7 +18,7 @@
         private Dictionary<string, string> modulesCache = new Dictionary<string, string>();
 
         private EnvDTE.Window currentWindow;
-        SerialPort serialPort = new SerialPort();
+        SerialPort serialPort = new SerialPort() { Handshake = Handshake.None, DataBits = 8, Parity = Parity.None, StopBits = StopBits.One };
         /// <summary>
         /// Initializes a new instance of the <see cref="TerminalWindowControl"/> class.
         /// </summary>
@@ -29,6 +29,12 @@
             serialPort.DataReceived += SerialPort_DataReceived;
 
             espruinovss.Instance.Dte.Events.WindowEvents.WindowActivated += WindowEvents_WindowActivated;
+
+            string[] ports = SerialPort.GetPortNames();
+            cmbPorts.ItemsSource = ports;
+            if (ports != null && ports.Length > 0)
+                cmbPorts.SelectedValue = ports[0];
+
         }
 
         private void WindowEvents_WindowActivated(EnvDTE.Window GotFocus, EnvDTE.Window LostFocus)
@@ -40,18 +46,23 @@
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //SerialPort sp = (SerialPort)sender;
-            //string indata = sp.ReadExisting();
-            //txtTerminal.AppendText(indata);
 
             byte[] buffer = new byte[serialPort.BytesToRead];
             serialPort.Read(buffer, 0, buffer.Length);
 
             var data = System.Text.Encoding.UTF8.GetString(buffer);
+            //if (data.StartsWith("=") && data.EndsWith(">\n"))
+            {
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    txtTerminal.AppendText(data);
 
-            txtTerminal.AppendText(data);
+                    txtTerminal.ScrollToEnd();
 
-            txtTerminal.ScrollToEnd();
+                }));
+            }
+
+            
         }
 
         private void ports_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -93,13 +104,13 @@
         {
             AppentResult(data);
 
-            //serialPort.Write(data);
+            serialPort.Write(data);
         }
 
         private void SendEnd(string data = null)
         {
             if (data != null) Send(data);
-            Send("\r\n");
+            Send("\n");
         }
 
         private void AppentResult(string data)
@@ -108,14 +119,19 @@
             txtTerminal.ScrollToEnd();
         }
 
-        private void SendCode()
+        private void SendCode(bool reset = false)
         {
 
             try
             {
                 if (currentWindow?.Document?.Language == "TypeScript")
                 {
-                    SendEnd("reset();");
+                    if (reset)
+                    {
+                        SendEnd("reset()");
+
+                        System.Threading.Thread.Sleep(100);
+                    }
 
                     string code = null;
                     TextDocument document = (TextDocument)currentWindow?.Document.Object(String.Empty);
@@ -170,6 +186,21 @@
         private void sendToBoard_Clicked(object sender, RoutedEventArgs e)
         {
             SendCode();
+        }
+
+        private void Disconnect_Clicked(object sender, RoutedEventArgs e)
+        {
+            serialPort.Close();
+        }
+
+        private void sendToBoardReset_Clicked(object sender, RoutedEventArgs e)
+        {
+            SendCode(true);
+        }
+
+        private void sendReset_Clicked(object sender, RoutedEventArgs e)
+        {
+            SendEnd("reset()");
         }
     }
 }
